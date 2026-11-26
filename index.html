@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ใครรวยสุดตอน 60?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@500;700&family=IBM+Plex+Sans+Thai:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* VOICE: a lively party board game for a work team, plain Thai, quick to grasp on a phone
+   IDEA: a printed life-track board: 25 → 60, four stops, a coin token moving along it
+   PICTURE: the board track itself, drawn large on the start screen and as a strip on every round
+   COLOUR and TYPE: deep forest green field, white cards, gold coin accent; Anuphan + IBM Plex Sans Thai
+   LAYOUT: one calm column on phones, cards stacked; host view is a wide stage for a projector */
+:root{color-scheme:light dark;--bg:light-dark(#1f4d3a,#10261d);--card:light-dark(#fff,#18342a);--ink:light-dark(#16241e,#eef4f0);--soft:light-dark(#5d6d66,#a9bdb3);--line:light-dark(#dfe7e2,#2c4a3e);--tint:light-dark(#eef4f0,#1e3d31);--gold:#e8a33d;--green:light-dark(#1f7a55,#5cc596);--red:light-dark(#c8553d,#f08a72);--onbg:#f3f7f4}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "IBM Plex Sans Thai","Leelawadee UI",Tahoma,sans-serif;overflow-x:clip}
+h1,h2,h3,.big{font-family:Anuphan,"Leelawadee UI",Tahoma,sans-serif;margin:0;line-height:1.15;text-wrap:balance}
+.wrap{max-width:560px;margin:0 auto;padding:20px 16px 48px;display:grid;gap:16px}
+.host .wrap{max-width:1180px}
+.top{color:var(--onbg);display:grid;gap:6px}
+.top h1{font-size:clamp(30px,7vw,48px)}
+.top p{margin:0;opacity:.85}
+.card{background:var(--card);border-radius:16px;padding:18px;display:grid;gap:14px;box-shadow:0 6px 18px rgb(0 0 0 / .18)}
+.card h2{font-size:22px}.card h3{font-size:17px}
+.muted{color:var(--soft);font-size:14px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.spread{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+button{font:600 16px "IBM Plex Sans Thai",Tahoma,sans-serif;min-height:44px;border-radius:12px;border:2px solid var(--green);background:transparent;color:var(--green);padding:8px 16px;cursor:pointer}
+button.main{background:var(--green);color:#fff;border-color:var(--green);width:100%;font-size:18px;min-height:52px}
+button.gold{background:var(--gold);border-color:var(--gold);color:#1b1b1b}
+button.on{background:light-dark(#14583d,#2f9a6c);border-color:light-dark(#14583d,#2f9a6c);color:#fff}
+.chips.chips4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.arow.ro{grid-template-columns:minmax(0,1fr) 70px}
+button:disabled{opacity:.4;cursor:not-allowed}
+a.btnlink{display:flex;align-items:center;justify-content:center;min-height:52px;border-radius:12px;background:var(--gold);color:#1b1b1b;font:700 18px 'IBM Plex Sans Thai',Tahoma,sans-serif;text-decoration:none}
+a.btnlink:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+input{font:16px "IBM Plex Sans Thai",Tahoma,sans-serif;min-height:48px;border-radius:12px;border:2px solid var(--line);background:var(--tint);color:var(--ink);padding:8px 14px;width:100%}
+.code{font:700 28px Anuphan,Tahoma,sans-serif;letter-spacing:.2em;text-align:center}
+.board{width:100%;display:block}
+.alloc{display:grid;gap:10px}
+.arow{display:grid;grid-template-columns:minmax(0,1fr) 44px 58px 44px;gap:8px;align-items:center}
+.arow b{font-weight:600}.arow small{display:block;color:var(--soft);font-size:13px;line-height:1.3}
+.arow .pct{text-align:center;font:700 20px Anuphan,Tahoma,sans-serif;font-variant-numeric:tabular-nums}
+.arow button{padding:0;min-width:44px}
+.stackbar{display:flex;height:14px;border-radius:7px;overflow:hidden;background:var(--line)}
+.stackbar span{display:block;height:100%}
+.chips{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.chips button{width:100%;padding:6px 4px;font-size:14px;line-height:1.25}
+.chips2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.big{font-size:clamp(32px,9vw,52px);font-variant-numeric:tabular-nums;white-space:nowrap}
+.money{font-variant-numeric:tabular-nums;white-space:nowrap}
+.evt{border-radius:14px;padding:14px 16px;background:var(--tint);display:grid;gap:4px}
+.evt.bad{background:light-dark(#fbe7e2,#3d221c)}.evt.good{background:light-dark(#e3f3ea,#173c2b)}
+.mk{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.mk div{background:var(--tint);border-radius:12px;padding:10px 6px;text-align:center;font-size:13px}
+.mk b{display:block;font:700 20px Anuphan,Tahoma,sans-serif}
+.up{color:var(--green)}.down{color:var(--red)}
+ul.notes{margin:0;padding-left:20px;display:grid;gap:6px}
+.warn{color:var(--red);font-weight:600}
+.bars{display:grid;gap:8px}
+.bars .b{display:grid;grid-template-columns:52px minmax(0,1fr) 110px;gap:8px;align-items:center;font-size:14px}
+.bars i{display:block;height:14px;border-radius:7px;background:var(--gold)}
+.bars span:last-child{text-align:right}
+.tabs{display:flex;gap:8px;flex-wrap:wrap}
+.top button{color:var(--onbg);border-color:rgb(255 255 255 / .45)}.top button.on{background:var(--gold);border-color:var(--gold);color:#1b1b1b}
+.stage{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:16px}
+.host .big{font-size:clamp(40px,6vw,80px)}
+.host .card{font-size:19px}
+.hostcode{font:700 clamp(56px,9vw,120px) Anuphan,Tahoma,sans-serif;letter-spacing:.15em;color:var(--gold);text-align:center;line-height:1}
+.timer{font:700 64px Anuphan,Tahoma,sans-serif;text-align:center;font-variant-numeric:tabular-nums}
+.hide{display:none!important}
+.dlg{position:fixed;inset:0;background:rgb(0 0 0 / .5);display:grid;place-items:center;padding:16px}
+.dlg .card{max-width:420px}
+@media(max-width:820px){.stage{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:400px){.mk{grid-template-columns:repeat(2,minmax(0,1fr))}.bars .b{grid-template-columns:44px minmax(0,1fr) 92px}}
+@media(prefers-reduced-motion:no-preference){.coin{transition:transform .8s cubic-bezier(.3,1.4,.5,1)}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<div class="dlg hide" id="dlg"><div class="card"><h3 id="dlgT"></h3><div class="row"><button id="dlgNo">ยกเลิก</button><button class="main" style="width:auto;flex:1" id="dlgYes">ยืนยัน</button></div></div></div>
+<script>
+{
+const ASSETS=[
+ {k:'dep',n:'เงินฝาก',d:'ปลอดภัย โตช้า หยิบใช้ได้ทันที',c:'#a9c7b8'},
+ {k:'bond',n:'ตราสารหนี้',d:'ผันผวนต่ำ โตพอประมาณ',c:'#3e8e9e'},
+ {k:'stock',n:'กองทุนหุ้น',d:'โตสูงระยะยาว แต่ขึ้นลงแรง',c:'#1f7a55'},
+ {k:'gold',n:'ทองคำ',d:'ขึ้นตอนวิกฤต ไม่มีดอกผล',c:'#e8a33d'}];
+const ROUNDS=[
+ {age:'25 → 35',from:25,to:35,title:'เริ่มทำงาน',income:400000,special:'debt',code:'3510',
+  mult:{dep:1.16,bond:1.34,stock:2.16,gold:1.34},market:'เศรษฐกิจโตดี ตลาดหุ้นขึ้นต่อเนื่องทั้ง 10 ปี',
+  event:{name:'รถเสียหนัก + ซ่อมบ้าน',cost:80000,ins:false,text:'ต้องใช้เงินด่วน 80,000 บาท ประกันสุขภาพช่วยไม่ได้'}},
+ {age:'35 → 45',from:35,to:45,title:'สร้างครอบครัว',income:800000,special:null,code:'4520',
+  mult:{dep:1.16,bond:1.41,stock:1.10,gold:2.00},market:'วิกฤตเศรษฐกิจ หุ้นตกแรงแล้วฟื้นได้ครึ่งทาง ทองคำขึ้นแรง',
+  event:{name:'ป่วยหนัก ต้องผ่าตัด',cost:600000,ins:true,text:'ค่ารักษา 600,000 บาท ใครมีประกันสุขภาพ ประกันจ่ายให้ทั้งหมด'}},
+ {age:'45 → 55',from:45,to:55,title:'ช่วงเงินเดือนสูงสุด',income:1200000,special:'scam',code:'5530',
+  mult:{dep:1.16,bond:1.34,stock:2.60,gold:1.30},market:'ตลาดหุ้นฟื้นแรง ใครถือหุ้นไว้ได้กำไรงาม',
+  event:{name:'แชร์ลูกโซ่ล่ม',scam:true,text:'"กองทุนการันตี 5% ต่อเดือน" ที่เพื่อนชวน ปิดหนีไป เงินที่ใส่ไว้หายหมด'}},
+ {age:'55 → 60',from:55,to:60,title:'โค้งสุดท้ายก่อนเกษียณ',income:700000,special:null,code:'6040',
+  mult:{dep:1.08,bond:1.15,stock:0.75,gold:1.25},market:'ตลาดหุ้นตก 25% ในปีก่อนเกษียณพอดี',
+  event:null}];
+// Google Form for the ranking: paste the form's prefilled link pieces here
+const FORM={url:'https://docs.google.com/forms/d/e/1FAIpQLSe23Ap66eLIP6ZrUnmnxOiS9Liz5qSqSpQtSSgsUee_OkZCMg/viewform',name:'entry.807808926',wealth:'entry.555685202',hp:'entry.1237342737'};
+const formLink=w=>FORM.url?FORM.url+'?usp=pp_url&'+FORM.name+'='+encodeURIComponent(S.name)+'&'+FORM.wealth+'='+Math.round(w)+'&'+FORM.hp+'='+S.hp:'';
+const INS=60000, HAPPY=[{n:'ประหยัดสุด',p:0,pt:0},{n:'พอดี ๆ',p:.15,pt:1},{n:'จัดเต็ม',p:.30,pt:2}];
+const PRESET={safe:{dep:40,bond:40,stock:10,gold:10},mid:{dep:20,bond:30,stock:40,gold:10},grow:{dep:10,bond:10,stock:70,gold:10}};
+const $=id=>document.getElementById(id), app=$('app');
+const fmt=n=>Math.round(n).toLocaleString('en-US');
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const sum=o=>ASSETS.reduce((s,a)=>s+(o[a.k]||0),0);
+const KEY='rich60-v2';
+let S=load();
+function fresh(){return{name:'',r:0,phase:'start',W:{dep:0,bond:0,stock:0,gold:0},alloc:{...PRESET.mid},preset:'mid',ins:true,happy:1,debt:'pay',scam:0,hp:0,log:[],pending:null}}
+function load(){try{const v=JSON.parse(localStorage.getItem(KEY));if(v&&v.W)return v}catch(e){}return fresh()}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function ask(t,yes){$('dlgT').textContent=t;$('dlg').classList.remove('hide');$('dlgYes').onclick=()=>{$('dlg').classList.add('hide');yes()};$('dlgNo').onclick=()=>$('dlg').classList.add('hide')}
+
+function board(pos,big){ // life-track board, pos 0..4
+ const W=520,H=big?250:120,ys=big?[200,120,190,110,170]:[90,40,85,35,75],xs=[40,150,260,370,480],ages=[25,35,45,55,60];
+ let d='M'+xs[0]+' '+ys[0];for(let i=1;i<5;i++){const mx=(xs[i-1]+xs[i])/2;d+=` C${mx} ${ys[i-1]} ${mx} ${ys[i]} ${xs[i]} ${ys[i]}`}
+ const stops=xs.map((x,i)=>`<g><circle cx="${x}" cy="${ys[i]+4}" r="${big?26:18}" fill="rgb(0 0 0 / .25)"/><circle cx="${x}" cy="${ys[i]}" r="${big?26:18}" fill="${i<=pos?'#e8a33d':'#f3f7f4'}" stroke="#0e2b20" stroke-width="3"/><text x="${x}" y="${ys[i]+(big?8:6)}" text-anchor="middle" font-family="Anuphan,Tahoma" font-weight="700" font-size="${big?22:15}" fill="#16241e">${ages[i]}</text></g>`).join('');
+ const cx=xs[pos],cy=ys[pos]-(big?50:32);
+ return `<svg class="board" viewBox="0 0 ${W} ${H}" role="img" aria-label="กระดานชีวิต อายุ 25 ถึง 60 ตอนนี้อยู่ที่อายุ ${ages[pos]}">
+ <path d="${d}" fill="none" stroke="rgb(0 0 0 / .25)" stroke-width="${big?30:20}" stroke-linecap="round" transform="translate(0 5)"/>
+ <path d="${d}" fill="none" stroke="#2f6b52" stroke-width="${big?30:20}" stroke-linecap="round"/>
+ <path d="${d}" fill="none" stroke="#f3f7f4" stroke-width="2" stroke-dasharray="8 10" opacity=".6"/>${stops}
+ <g class="coin" style="transform:translate(${cx}px,${cy}px)"><ellipse cx="0" cy="${big?34:22}" rx="${big?16:10}" ry="4" fill="rgb(0 0 0 / .3)"/><circle r="${big?18:12}" fill="#e8a33d" stroke="#8a5a12" stroke-width="3"/><text y="${big?7:5}" text-anchor="middle" font-family="Anuphan" font-weight="700" font-size="${big?20:13}" fill="#5b3a08">฿</text></g></svg>`}
+
+function stackbar(a){return `<div class="stackbar" aria-hidden="true">${ASSETS.map(x=>`<span style="flex:${a[x.k]} 0 0;background:${x.c}"></span>`).join('')}</div>`}
+function netFor(r){const R=ROUNDS[r];return R.income-R.income*HAPPY[S.happy].p-(S.ins?INS:0)-(R.special==='debt'&&S.debt==='pay'?100000:0)-(R.special==='scam'?S.scam:0)}
+
+function render(){
+
+ document.body.classList.remove('host');
+ const head=`<div class="top"><h1>ใครรวยสุดตอน 60?</h1><p>${S.name?esc(S.name)+' · ':''}เกมชีวิตการเงิน 4 รอบ จากอายุ 25 ถึงเกษียณ</p></div>`;
+ if(S.phase==='start'){app.innerHTML=head+`<div class="card">${board(0,true)}
+  <p>ทุกคนเริ่มที่อายุ 25 มีหนี้บัตรเครดิต 100,000 บาท แต่ละรอบได้เงินเหลือเก็บก้อนหนึ่ง ตัดสินใจว่าจะลงทุนอะไร ซื้อประกันไหม ใช้เงินเพื่อความสุขแค่ไหน แล้วรอผู้ดำเนินเกมเปิดการ์ดเหตุการณ์ ใครมีเงินมากสุดตอนอายุ 60 ชนะ</p>
+  <label for="nm" class="muted">ชื่อเล่นของคุณ</label><input id="nm" maxlength="20" autocomplete="nickname" value="${esc(S.name)}" placeholder="เช่น โค้ชเติ้ล"><p id="nmErr" class="warn" style="margin:0">ใส่ชื่อก่อนเริ่มเกม ชื่อนี้จะใช้ตอนประกาศอันดับ</p>
+  <button class="main" id="go" disabled>เริ่มเกม</button></div>`;
+  const chk=()=>{const ok=$('nm').value.trim().length>0;$('go').disabled=!ok;$('nmErr').classList.toggle('hide',ok)};chk();
+  $('nm').oninput=chk;$('nm').onkeydown=e=>{if(e.key==='Enter'&&!$('go').disabled)$('go').click()};
+  $('go').onclick=()=>{const v=$('nm').value.trim();if(!v){$('nm').focus();return}S.name=v;S.phase='decide';save();render()};return}
+ const R=ROUNDS[S.r]||ROUNDS[3], wealth=sum(S.W);
+ const strip=`<div class="card" style="gap:6px">${board(S.phase==='final'?4:S.r,false)}<div class="spread"><span class="muted">${S.phase==='final'?'เกษียณแล้ว':'รอบที่ '+(S.r+1)+' จาก 4 · อายุ '+R.age}</span><span class="money"><span class="muted">เงินตอนนี้ </span><b>${fmt(wealth)}</b> ฿</span></div></div>`;
+ if(S.phase==='decide')return decide(head,strip,R);
+ if(S.phase==='wait')return wait(head,strip,R);
+ if(S.phase==='result')return result(head,strip,R);
+ return final(head)}
+
+function decide(head,strip,R){
+ const a=S.alloc,tot=sum(a),net=netFor(S.r);
+ app.innerHTML=head+strip+`<div class="card"><div><h2>รอบ ${S.r+1}: ${R.title}</h2><p class="muted">อายุ ${R.age} · เงินเหลือเก็บรอบนี้ <span class="money">${fmt(R.income)}</span> บาท</p></div>
+ ${R.special==='debt'?`<div class="evt bad"><h3>หนี้บัตรเครดิต 100,000 บาท (ดอกเบี้ย 16% ต่อปี)</h3><div class="chips chips2"><button data-debt="pay" class="${S.debt==='pay'?'on':''}">โปะทันที<br><small>หัก 100,000 จากเงินรอบนี้</small></button><button data-debt="min" class="${S.debt==='min'?'on':''}">จ่ายขั้นต่ำไปเรื่อย ๆ<br><small>เก็บเงินไว้ลงทุนก่อน</small></button></div></div>`:''}
+ ${R.special==='scam'?`<div class="evt bad"><h3>เพื่อนสนิทชวนลงทุน "การันตี 5% ต่อเดือน"</h3><div class="chips">${[0,200000,500000].map(v=>`<button data-scam="${v}" class="${S.scam===v?'on':''}">${v?'ใส่ '+fmt(v):'ไม่ร่วม'}</button>`).join('')}</div></div>`:''}
+ <div class="alloc"><div class="spread"><h3>แบ่งเงินทั้งหมดของคุณไปที่</h3><span class="${tot===100?'up':'warn'}">รวม ${tot}%</span></div><div class="chips chips4">${[['safe','ปลอดภัย'],['mid','สมดุล'],['grow','เน้นโต'],['custom','Custom']].map(([k,n])=>`<button data-pre="${k}" class="${(S.preset||'custom')===k?'on':''}" aria-pressed="${(S.preset||'custom')===k}">${n}</button>`).join('')}</div>${stackbar(a)}
+ ${ASSETS.map(x=>S.preset==='custom'?`<div class="arow"><div><b>${x.n}</b><small>${x.d}</small></div><button data-m="${x.k}" aria-label="ลด${x.n}">−</button><div class="pct">${a[x.k]}%</div><button data-p="${x.k}" aria-label="เพิ่ม${x.n}">+</button></div>`:`<div class="arow ro"><div><b>${x.n}</b><small>${x.d}</small></div><div class="pct">${a[x.k]}%</div></div>`).join('')}
+ ${S.preset==='custom'?'<p class="muted" style="margin:0">กด + / − ทีละ 10% ให้รวมเป็น 100%</p>':''}</div>
+ <div><h3>ประกันสุขภาพ (${fmt(INS)} บาทต่อรอบ)</h3><div class="chips chips2" style="margin-top:8px"><button data-ins="1" class="${S.ins?'on':''}">ซื้อ</button><button data-ins="0" class="${S.ins?'':'on'}">ไม่ซื้อ</button></div></div>
+ <div><h3>ใช้เงินเพื่อความสุขระหว่างทาง</h3><div class="chips" style="margin-top:8px">${HAPPY.map((h,i)=>`<button data-h="${i}" class="${S.happy===i?'on':''}">${h.n}<br><small>${h.p?'ใช้ '+h.p*100+'% · +'+h.pt+' แต้มสุข':'0 แต้มสุข'}</small></button>`).join('')}</div></div>
+ <div class="evt"><span class="muted">เงินใหม่ที่เข้าพอร์ตรอบนี้ (หลังหักทุกอย่าง)</span><b class="money" style="font-size:22px">${fmt(net)} บาท</b></div>
+ <button class="main" id="lock" ${tot!==100?'disabled':''}>ล็อกการตัดสินใจ</button>${tot!==100?'<p class="warn" style="margin:0">ปรับสัดส่วนให้รวมเป็น 100% ก่อน</p>':''}</div>`;
+ app.querySelectorAll('[data-p],[data-m]').forEach(b=>b.onclick=()=>{const k=b.dataset.p||b.dataset.m,d=b.dataset.p?10:-10;S.alloc[k]=Math.min(100,Math.max(0,S.alloc[k]+d));S.preset='custom';save();render()});
+ app.querySelectorAll('[data-pre]').forEach(b=>b.onclick=()=>{const k=b.dataset.pre;S.preset=k;if(k!=='custom')S.alloc={...PRESET[k]};save();render()});
+ app.querySelectorAll('[data-ins]').forEach(b=>b.onclick=()=>{S.ins=b.dataset.ins==='1';save();render()});
+ app.querySelectorAll('[data-h]').forEach(b=>b.onclick=()=>{S.happy=+b.dataset.h;save();render()});
+ app.querySelectorAll('[data-debt]').forEach(b=>b.onclick=()=>{S.debt=b.dataset.debt;save();render()});
+ app.querySelectorAll('[data-scam]').forEach(b=>b.onclick=()=>{S.scam=+b.dataset.scam;save();render()});
+ $('lock').onclick=()=>{S.phase='wait';save();render();scrollTo(0,0)}}
+
+function wait(head,strip,R){
+ app.innerHTML=head+strip+`<div class="card"><h2>ล็อกแล้ว รอเปิดการ์ด</h2><p>ผู้ดำเนินเกมจะเปิดผลตลาดและการ์ดเหตุการณ์ของรอบนี้บนจอ พร้อมรหัสรอบ ใส่รหัสเพื่อดูผลของคุณ</p>
+ <input id="cd" class="code" inputmode="numeric" maxlength="4" autocomplete="off" aria-label="รหัสรอบ"><p id="bad" class="warn hide" style="margin:0">รหัสไม่ถูก ลองอีกครั้ง</p>
+ <button class="main gold" id="open">เปิดผล</button><button id="back">กลับไปแก้การตัดสินใจ</button></div>`;
+ const tryOpen=()=>{if($('cd').value.trim()===R.code){reveal();}else{$('bad').classList.remove('hide')}};
+ $('open').onclick=tryOpen;$('cd').onkeydown=e=>{if(e.key==='Enter')tryOpen()};$('back').onclick=()=>{S.phase='decide';save();render()}}
+
+function reveal(){
+ const R=ROUNDS[S.r],before=sum(S.W),net=netFor(S.r),notes=[];let total=before+net;
+ const H={};ASSETS.forEach(x=>H[x.k]=total*S.alloc[x.k]/100);
+ ASSETS.forEach(x=>H[x.k]*=R.mult[x.k]);
+ const takeProRata=amt=>{const t=sum(H);if(t<=0)return;const f=Math.max(0,1-amt/t);ASSETS.forEach(x=>H[x.k]*=f)};
+ if(R.special==='debt'&&S.debt==='min'){takeProRata(250000);notes.push({bad:1,t:'จ่ายหนี้บัตรขั้นต่ำ 10 ปี เสียทั้งต้นและดอกรวม 250,000 บาท (โปะทันทีจ่ายแค่ 100,000)'})}
+ if(R.special==='debt'&&S.debt==='pay')notes.push({good:1,t:'โปะหนี้บัตรตั้งแต่ต้น ไม่เสียดอกเบี้ย 16% ต่อปี'});
+ if(R.event&&R.event.cost){if(R.event.ins&&S.ins)notes.push({good:1,t:'ประกันสุขภาพจ่ายค่ารักษา '+fmt(R.event.cost)+' บาทให้ทั้งหมด'});
+  else{const c=R.event.cost,fromDep=Math.min(H.dep,c),short=c-fromDep;H.dep-=fromDep;
+   if(short>0){takeProRata(short*1.5);notes.push({bad:1,t:'เงินฝากไม่พอจ่าย '+fmt(c)+' บาท ส่วนที่ขาด '+fmt(short)+' บาท ต้องกู้ด่วนดอกเบี้ยสูง เสียจริง '+fmt(short*1.5)+' บาท'})}
+   else notes.push({t:'จ่าย '+fmt(c)+' บาทจากเงินฝากได้ทันที ไม่ต้องกู้'})}}
+ if(R.special==='scam'){if(S.scam>0)notes.push({bad:1,t:'เงิน '+fmt(S.scam)+' บาทที่ใส่ไว้ในแชร์ลูกโซ่ หายหมด'});else notes.push({good:1,t:'ปฏิเสธเพื่อนได้ ไม่เสียเงินให้แชร์ลูกโซ่'})}
+ S.W=H;S.hp+=HAPPY[S.happy].pt;
+ S.log.push({r:S.r,before,after:sum(H),alloc:{...S.alloc},ins:S.ins,happy:S.happy,debt:S.debt,scam:R.special==='scam'?S.scam:0,notes});
+ S.phase='result';save();render();scrollTo(0,0)}
+
+function result(head,strip,R){
+ const L=S.log[S.log.length-1];
+ app.innerHTML=head+strip+`<div class="card"><h2>ผลรอบ ${S.r+1}: อายุ ${R.age}</h2>
+ <div class="evt"><b>ตลาด:</b> ${R.market}</div>
+ <div class="mk">${ASSETS.map(x=>{const p=Math.round((R.mult[x.k]-1)*100);return `<div>${x.n}<b class="${p>=0?'up':'down'}">${p>=0?'+':''}${p}%</b></div>`}).join('')}</div>
+ ${R.event?`<div class="evt bad"><h3>การ์ดเหตุการณ์: ${R.event.name}</h3><span>${R.event.text}</span></div>`:''}
+ <h3>เกิดอะไรกับเงินคุณ</h3><ul class="notes">${L.notes.map(n=>`<li class="${n.bad?'warn':n.good?'up':''}">${n.t}</li>`).join('')||'<li>รอบนี้ไม่มีเหตุการณ์พิเศษ</li>'}<li>ใช้เงินเพื่อความสุข: ${HAPPY[L.happy].n} (+${HAPPY[L.happy].pt} แต้มสุข)</li></ul>
+ <div class="spread"><span class="muted">เงินทั้งหมดตอนนี้</span><span class="big">${fmt(L.after)} ฿</span></div>
+ <button class="main" id="nx">${S.r<3?'ไปรอบถัดไป':'ดูผลตอนเกษียณ'}</button></div>`;
+ $('nx').onclick=()=>{if(S.r<3){S.r++;S.phase='decide';S.scam=0}else S.phase='final';save();render();scrollTo(0,0)}}
+
+function lessons(){
+ const out=[],L=S.log,g=i=>L[i]||{};
+ if(g(0).debt==='min')out.push('จ่ายหนี้บัตรขั้นต่ำ ทำให้เสียดอกเบี้ยไป 150,000 บาท ทั้งที่โปะได้ตั้งแต่ต้น');
+ if((g(0).notes||[]).some(n=>/กู้ด่วน/.test(n.t)))out.push('ไม่มีเงินสำรองฉุกเฉินตอนรถเสีย ต้องกู้ด่วนดอกเบี้ยสูง');
+ if(g(1).ins===false)out.push('ไม่มีประกันสุขภาพตอนป่วยหนัก ค่ารักษา 600,000 บาทกินเงินเกษียณ');
+ if(g(2).scam>0)out.push('เสียเงินให้แชร์ลูกโซ่ที่การันตีผลตอบแทนสูงเกินจริง');
+ if(g(3).alloc&&g(3).alloc.stock>=50)out.push('ใกล้เกษียณยังถือหุ้น '+g(3).alloc.stock+'% เจอตลาดตกปีสุดท้ายพอดี');
+ if(g(2).alloc&&g(2).alloc.stock<=10)out.push('ช่วงอายุ 45–55 ถือหุ้นน้อย พลาดช่วงตลาดฟื้นแรง');
+ if(!out.length)out.push('เล่นได้รอบคอบมาก ทั้งเรื่องหนี้ ประกัน เงินสำรอง และการลดความเสี่ยงก่อนเกษียณ');
+ return out}
+
+function final(head){
+ const w=sum(S.W),max=Math.max(...S.log.map(l=>l.after),1);
+ app.innerHTML=head+`<div class="card">${board(4,false)}<p class="muted" style="margin:0">${esc(S.name)} เกษียณที่อายุ 60 ด้วยเงิน</p><div class="big" style="color:var(--green)">${fmt(w)} ฿</div>
+ <div class="spread"><span>แต้มความสุขระหว่างทาง</span><b style="font-size:24px">${S.hp} / 8</b></div>
+ <div class="bars">${S.log.map(l=>`<div class="b"><span>อายุ ${ROUNDS[l.r].to}</span><i style="width:${Math.max(2,l.after/max*100)}%"></i><span class="money">${fmt(l.after)}</span></div>`).join('')}</div>
+ <h3>บทเรียนจากเกมของคุณ</h3><ul class="notes">${lessons().map(t=>`<li>${t}</li>`).join('')}</ul>
+ <div class="evt good"><b>แจ้งผู้ดำเนินเกม:</b> ชื่อ ${esc(S.name)} · เงิน ${fmt(w)} บาท · ${S.hp} แต้มสุข</div>
+ ${formLink(w)?`<a class="btnlink" href="${esc(formLink(w))}" target="_blank" rel="noopener">ส่งคะแนนขึ้น Ranking</a><p class="muted" style="margin:0">เปิด Google Form ที่กรอกชื่อและคะแนนให้แล้ว กด "ส่ง" ได้เลย ส่งครั้งเดียวพอ</p>`:''}
+ <button id="again">เล่นใหม่</button><p class="muted" style="margin:0">เกมนี้ใช้ตัวเลขสมมติ ไม่ใช่ผลตอบแทนจริงหรือคำแนะนำการลงทุน</p></div>`;
+ $('again').onclick=()=>ask('ล้างผลแล้วเริ่มเล่นใหม่?',()=>{const n=S.name;S=fresh();S.name=n;save();render()})}
+
+// ---------- host / projector view (open with #host) ----------
+let HR=0,HP='decide',TT=null,left=180;
+function renderHost(){
+ document.body.classList.add('host');
+ const tabs=`<div class="tabs">${ROUNDS.map((r,i)=>`<button data-r="${i}" class="${HR===i?'on':''}">รอบ ${i+1} · ${r.age}</button>`).join('')}<button data-r="4" class="${HR===4?'on':''}">สรุปท้ายเกม</button></div>`;
+ const head=`<div class="top"><h1>ใครรวยสุดตอน 60? · จอผู้ดำเนินเกม</h1>${tabs}</div>`;
+ if(HR===4){app.innerHTML=head+`<div class="card"><h2>ชวนคุยท้ายเกม</h2><ul class="notes">
+  <li>ใครมีเงินเกิน 10 ล้าน ยกมือ · ใครแต้มสุขเกิน 4 ยกมือ · มีใครได้ทั้งสองอย่างไหม</li>
+  <li>รอบ 1: ใครโปะหนี้บัตรทันที ใครจ่ายขั้นต่ำ ต่างกันเท่าไหร่</li>
+  <li>รอบ 2: ประกันสุขภาพ 60,000 บาทต่อรอบ คุ้มไหมเมื่อเจอค่ารักษา 600,000</li>
+  <li>รอบ 3: มีใครใส่เงินในแชร์ลูกโซ่บ้าง ตอนนั้นคิดอะไรอยู่</li>
+  <li>รอบ 4: ใครลดหุ้นก่อนเกษียณ หนีตลาดตก 25% ได้ทัน</li>
+  <li>โยงกลับ Bonus Checklist: เงินสำรอง · โปะหนี้แพง · กระจายความเสี่ยง · ลดเสี่ยงเมื่อใกล้ใช้เงิน · ระวังมิจฉาชีพ</li></ul></div>`;bindHost();return}
+ const R=ROUNDS[HR];
+ const decideTxt=`<ul class="notes"><li>เงินเหลือเก็บรอบนี้ ${fmt(R.income)} บาท</li><li>แบ่งเงินทั้งหมดไป เงินฝาก / ตราสารหนี้ / กองทุนหุ้น / ทองคำ</li><li>ซื้อประกันสุขภาพไหม (${fmt(INS)} บาท)</li><li>ใช้เงินเพื่อความสุขแค่ไหน</li>${R.special==='debt'?'<li><b>พิเศษ:</b> หนี้บัตร 100,000 บาท โปะทันทีหรือจ่ายขั้นต่ำ</li>':''}${R.special==='scam'?'<li><b>พิเศษ:</b> เพื่อนชวนลงทุน "การันตี 5% ต่อเดือน"</li>':''}</ul>`;
+ app.innerHTML=head+`<div class="stage"><div class="card"><div class="spread"><h2>รอบ ${HR+1}: ${R.title} (อายุ ${R.age})</h2><div class="row"><button data-ph="decide" class="${HP==='decide'?'on':''}">ช่วงตัดสินใจ</button><button data-ph="reveal" class="${HP==='reveal'?'on':''}">เปิดผล</button></div></div>
+ ${HP==='decide'?decideTxt:`<div class="evt"><b>ตลาด:</b> ${R.market}</div><div class="mk">${ASSETS.map(x=>{const p=Math.round((R.mult[x.k]-1)*100);return `<div>${x.n}<b class="${p>=0?'up':'down'}">${p>=0?'+':''}${p}%</b></div>`}).join('')}</div>${R.event?`<div class="evt bad"><h3>การ์ดเหตุการณ์: ${R.event.name}</h3><span>${R.event.text}</span></div>`:'<div class="evt">รอบสุดท้าย ไม่มีการ์ดเหตุการณ์เพิ่ม</div>'}`}</div>
+ <div class="card">${HP==='decide'?`<h3 style="text-align:center">เวลาตัดสินใจ</h3><div class="timer" id="tm">${Math.floor(left/60)}:${String(left%60).padStart(2,'0')}</div><div class="row" style="justify-content:center"><button class="gold" id="ts">${TT?'หยุด':'เริ่มจับเวลา'}</button><button id="tr">รีเซ็ต 3 นาที</button></div>${board(HR,false)}`:`<h3 style="text-align:center">รหัสเปิดผลรอบ ${HR+1}</h3><div class="hostcode">${R.code}</div><p class="muted" style="text-align:center;margin:0">ให้ทุกคนใส่รหัสนี้ในมือถือ</p>${board(Math.min(HR+1,4),false)}`}</div></div>`;
+ bindHost()}
+function bindHost(){
+ app.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{HR=+b.dataset.r;HP='decide';renderHost()});
+ app.querySelectorAll('[data-ph]').forEach(b=>b.onclick=()=>{HP=b.dataset.ph;renderHost()});
+ const ts=$('ts'),tr=$('tr');
+ if(ts)ts.onclick=()=>{if(TT){clearInterval(TT);TT=null}else{TT=setInterval(()=>{left=Math.max(0,left-1);const t=$('tm');if(t)t.textContent=Math.floor(left/60)+':'+String(left%60).padStart(2,'0');if(!left){clearInterval(TT);TT=null}},1000)}renderHost()};
+ if(tr)tr.onclick=()=>{clearInterval(TT);TT=null;left=180;renderHost()}}
+
+addEventListener('hashchange',render);
+render();
+}
+</script>
+</body>
+</html>
