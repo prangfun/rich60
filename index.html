@@ -105,15 +105,30 @@ const ROUNDS=[
 // Google Form for the ranking: paste the form's prefilled link pieces here
 const FORM={url:'https://docs.google.com/forms/d/e/1FAIpQLSe23Ap66eLIP6ZrUnmnxOiS9Liz5qSqSpQtSSgsUee_OkZCMg/viewform',name:'entry.807808926',wealth:'entry.555685202',hp:'entry.1237342737'};
 const formLink=w=>FORM.url?FORM.url+'?usp=pp_url&'+FORM.name+'='+encodeURIComponent(S.name)+'&'+FORM.wealth+'='+Math.round(w)+'&'+FORM.hp+'='+S.hp:'';
+const FATES=[
+ {n:'เกิดในครอบครัวพร้อม',t:'พ่อแม่ให้เงินตั้งตัว 200,000 บาท ใส่ไว้ในเงินฝากให้แล้ว',start:200000,inc:0,hp:0},
+ {n:'ครอบครัวทั่วไป',t:'เริ่มต้นแบบคนส่วนใหญ่ ไม่มีแต้มต่อ ไม่มีภาระพิเศษ',start:0,inc:0,hp:0},
+ {n:'ลูกกตัญญู ช่วยดูแลที่บ้าน',t:'ส่งเงินให้พ่อแม่ เงินเหลือเก็บน้อยลง 10% ทุกรอบ แต่ได้ +1 แต้มสุขทุกรอบ',start:0,inc:-.10,hp:1}];
+const CARDS=[
+ {n:'ตกงาน 6 เดือน',t:'ต้องใช้เงินประคองชีวิต 150,000 บาท',cost:150000},
+ {n:'พ่อแม่ป่วย',t:'ช่วยค่ารักษา 200,000 บาท ประกันของคุณไม่คุ้มครองพ่อแม่',cost:200000},
+ {n:'อุบัติเหตุ นอนโรงพยาบาล',t:'ค่ารักษา 150,000 บาท ถ้ามีประกันสุขภาพ ประกันจ่ายให้',cost:150000,ins:true},
+ {n:'เพื่อนยืมเงินแล้วหายเงียบ',t:'เสียเงิน 50,000 บาท',cost:50000},
+ {n:'ลูกสอบติดมหาวิทยาลัย',t:'ค่าเทอมและค่าหอ 120,000 บาท แต่ภูมิใจสุด ๆ +1 แต้มสุข',cost:120000,hp:1},
+ {n:'โบนัสพิเศษจากผลงาน',t:'ได้เงินเพิ่ม 150,000 บาท เข้าเงินฝาก',gain:150000},
+ {n:'ได้มรดกจากญาติ',t:'ได้เงินเพิ่ม 300,000 บาท เข้าเงินฝาก',gain:300000},
+ {n:'ถูกสลากเลขท้าย 2 ตัว',t:'ได้เงิน 2,000 บาท ดีใจนิดหน่อย',gain:2000},
+ {n:'ออกกำลังกายสม่ำเสมอ',t:'สุขภาพดี อารมณ์ดี +1 แต้มสุข',hp:1},
+ {n:'ชีวิตเรียบง่าย',t:'รอบนี้ไม่มีอะไรพิเศษเกิดขึ้น'}];
 const INS=60000, HAPPY=[{n:'ประหยัดสุด',p:0,pt:0},{n:'พอดี ๆ',p:.15,pt:1},{n:'จัดเต็ม',p:.30,pt:2}];
 const PRESET={safe:{dep:40,bond:40,stock:10,gold:10},mid:{dep:20,bond:30,stock:40,gold:10},grow:{dep:10,bond:10,stock:70,gold:10}};
 const $=id=>document.getElementById(id), app=$('app');
 const fmt=n=>Math.round(n).toLocaleString('en-US');
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const sum=o=>ASSETS.reduce((s,a)=>s+(o[a.k]||0),0);
-const KEY='rich60-v2';
+const KEY='rich60-v3';
 let S=load();
-function fresh(){return{name:'',r:0,phase:'start',W:{dep:0,bond:0,stock:0,gold:0},alloc:{...PRESET.mid},preset:'mid',ins:true,happy:1,debt:'pay',scam:0,hp:0,log:[],pending:null}}
+function fresh(){return{name:'',r:0,phase:'start',W:{dep:0,bond:0,stock:0,gold:0},alloc:{...PRESET.mid},preset:'mid',fate:1,used:[],ins:true,happy:1,debt:'pay',scam:0,hp:0,log:[],pending:null}}
 function load(){try{const v=JSON.parse(localStorage.getItem(KEY));if(v&&v.W)return v}catch(e){}return fresh()}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 function ask(t,yes){$('dlgT').textContent=t;$('dlg').classList.remove('hide');$('dlgYes').onclick=()=>{$('dlg').classList.add('hide');yes()};$('dlgNo').onclick=()=>$('dlg').classList.add('hide')}
@@ -130,7 +145,7 @@ function board(pos,big){ // life-track board, pos 0..4
  <g class="coin" style="transform:translate(${cx}px,${cy}px)"><ellipse cx="0" cy="${big?34:22}" rx="${big?16:10}" ry="4" fill="rgb(0 0 0 / .3)"/><circle r="${big?18:12}" fill="#e8a33d" stroke="#8a5a12" stroke-width="3"/><text y="${big?7:5}" text-anchor="middle" font-family="Anuphan" font-weight="700" font-size="${big?20:13}" fill="#5b3a08">฿</text></g></svg>`}
 
 function stackbar(a){return `<div class="stackbar" aria-hidden="true">${ASSETS.map(x=>`<span style="flex:${a[x.k]} 0 0;background:${x.c}"></span>`).join('')}</div>`}
-function netFor(r){const R=ROUNDS[r];return R.income-R.income*HAPPY[S.happy].p-(S.ins?INS:0)-(R.special==='debt'&&S.debt==='pay'?100000:0)-(R.special==='scam'?S.scam:0)}
+function netFor(r){const R=ROUNDS[r];return R.income*(1+(FATES[S.fate||0].inc||0))-R.income*HAPPY[S.happy].p-(S.ins?INS:0)-(R.special==='debt'&&S.debt==='pay'?100000:0)-(R.special==='scam'?S.scam:0)}
 
 function render(){
 
@@ -142,7 +157,7 @@ function render(){
   <button class="main" id="go" disabled>เริ่มเกม</button></div>`;
   const chk=()=>{const ok=$('nm').value.trim().length>0;$('go').disabled=!ok;$('nmErr').classList.toggle('hide',ok)};chk();
   $('nm').oninput=chk;$('nm').onkeydown=e=>{if(e.key==='Enter'&&!$('go').disabled)$('go').click()};
-  $('go').onclick=()=>{const v=$('nm').value.trim();if(!v){$('nm').focus();return}S.name=v;S.phase='decide';save();render()};return}
+  $('go').onclick=()=>{const v=$('nm').value.trim();if(!v){$('nm').focus();return}S.name=v;S.fate=Math.floor(Math.random()*FATES.length);S.used=[];S.W={dep:FATES[S.fate].start,bond:0,stock:0,gold:0};S.phase='decide';save();render()};return}
  const R=ROUNDS[S.r]||ROUNDS[3], wealth=sum(S.W);
  const strip=`<div class="card" style="gap:6px">${board(S.phase==='final'?4:S.r,false)}<div class="spread"><span class="muted">${S.phase==='final'?'เกษียณแล้ว':'รอบที่ '+(S.r+1)+' จาก 4 · อายุ '+R.age}</span><span class="money"><span class="muted">เงินตอนนี้ </span><b>${fmt(wealth)}</b> ฿</span></div></div>`;
  if(S.phase==='decide')return decide(head,strip,R);
@@ -152,7 +167,8 @@ function render(){
 
 function decide(head,strip,R){
  const a=S.alloc,tot=sum(a),net=netFor(S.r);
- app.innerHTML=head+strip+`<div class="card"><div><h2>รอบ ${S.r+1}: ${R.title}</h2><p class="muted">อายุ ${R.age} · เงินเหลือเก็บรอบนี้ <span class="money">${fmt(R.income)}</span> บาท</p></div>
+ app.innerHTML=head+strip+`<div class="card"><div><h2>รอบ ${S.r+1}: ${R.title}</h2><p class="muted">อายุ ${R.age} · เงินเหลือเก็บรอบนี้ <span class="money">${fmt(R.income*(1+(FATES[S.fate||0].inc||0)))}</span> บาท</p></div>
+ ${S.r===0?`<div class="evt good"><span class="muted">การ์ดชะตาตอนเกิดของคุณ (สุ่ม)</span><h3>${FATES[S.fate||0].n}</h3><span>${FATES[S.fate||0].t}</span></div>`:''}
  ${R.special==='debt'?`<div class="evt bad"><h3>หนี้บัตรเครดิต 100,000 บาท (ดอกเบี้ย 16% ต่อปี)</h3><div class="chips chips2"><button data-debt="pay" class="${S.debt==='pay'?'on':''}">โปะทันที<br><small>หัก 100,000 จากเงินรอบนี้</small></button><button data-debt="min" class="${S.debt==='min'?'on':''}">จ่ายขั้นต่ำไปเรื่อย ๆ<br><small>เก็บเงินไว้ลงทุนก่อน</small></button></div></div>`:''}
  ${R.special==='scam'?`<div class="evt bad"><h3>เพื่อนสนิทชวนลงทุน "การันตี 5% ต่อเดือน"</h3><div class="chips">${[0,200000,500000].map(v=>`<button data-scam="${v}" class="${S.scam===v?'on':''}">${v?'ใส่ '+fmt(v):'ไม่ร่วม'}</button>`).join('')}</div></div>`:''}
  <div class="alloc"><div class="spread"><h3>แบ่งเงินทั้งหมดของคุณไปที่</h3><span class="${tot===100?'up':'warn'}">รวม ${tot}%</span></div><div class="chips chips4">${[['safe','ปลอดภัย'],['mid','สมดุล'],['grow','เน้นโต'],['custom','Custom']].map(([k,n])=>`<button data-pre="${k}" class="${(S.preset||'custom')===k?'on':''}" aria-pressed="${(S.preset||'custom')===k}">${n}</button>`).join('')}</div>${stackbar(a)}
@@ -171,11 +187,9 @@ function decide(head,strip,R){
  $('lock').onclick=()=>{S.phase='wait';save();render();scrollTo(0,0)}}
 
 function wait(head,strip,R){
- app.innerHTML=head+strip+`<div class="card"><h2>ล็อกแล้ว รอเปิดการ์ด</h2><p>ผู้ดำเนินเกมจะเปิดผลตลาดและการ์ดเหตุการณ์ของรอบนี้บนจอ พร้อมรหัสรอบ ใส่รหัสเพื่อดูผลของคุณ</p>
- <input id="cd" class="code" inputmode="numeric" maxlength="4" autocomplete="off" aria-label="รหัสรอบ"><p id="bad" class="warn hide" style="margin:0">รหัสไม่ถูก ลองอีกครั้ง</p>
- <button class="main gold" id="open">เปิดผล</button><button id="back">กลับไปแก้การตัดสินใจ</button></div>`;
- const tryOpen=()=>{if($('cd').value.trim()===R.code){reveal();}else{$('bad').classList.remove('hide')}};
- $('open').onclick=tryOpen;$('cd').onkeydown=e=>{if(e.key==='Enter')tryOpen()};$('back').onclick=()=>{S.phase='decide';save();render()}}
+ app.innerHTML=head+strip+`<div class="card"><h2>ล็อกแล้ว</h2><p>รอผู้ดำเนินเกมเปิดการ์ดตลาดบนจอ แล้วกด "ดูผล" พร้อมกันทั้งห้อง รอบนี้คุณจะได้สุ่มการ์ดชีวิตส่วนตัวอีก 1 ใบด้วย</p>
+ <button class="main gold" id="open">ดูผล</button><button id="back">กลับไปแก้การตัดสินใจ</button></div>`;
+ $('open').onclick=reveal;$('back').onclick=()=>{S.phase='decide';save();render()}}
 
 function reveal(){
  const R=ROUNDS[S.r],before=sum(S.W),net=netFor(S.r),notes=[];let total=before+net;
@@ -188,9 +202,16 @@ function reveal(){
   else{const c=R.event.cost,fromDep=Math.min(H.dep,c),short=c-fromDep;H.dep-=fromDep;
    if(short>0){takeProRata(short*1.5);notes.push({bad:1,t:'เงินฝากไม่พอจ่าย '+fmt(c)+' บาท ส่วนที่ขาด '+fmt(short)+' บาท ต้องกู้ด่วนดอกเบี้ยสูง เสียจริง '+fmt(short*1.5)+' บาท'})}
    else notes.push({t:'จ่าย '+fmt(c)+' บาทจากเงินฝากได้ทันที ไม่ต้องกู้'})}}
+ const left=CARDS.map((c,i)=>i).filter(i=>!(S.used||[]).includes(i)),ci=left[Math.floor(Math.random()*left.length)],C=CARDS[ci];S.used=[...(S.used||[]),ci];
+ if(C.gain){H.dep+=C.gain;notes.push({good:1,t:C.n+': ได้เงิน '+fmt(C.gain)+' บาท'})}
+ if(C.cost){if(C.ins&&S.ins)notes.push({good:1,t:C.n+': ประกันสุขภาพจ่ายให้ '+fmt(C.cost)+' บาท'});
+  else{const fromDep=Math.min(H.dep,C.cost),short=C.cost-fromDep;H.dep-=fromDep;
+   if(short>0){takeProRata(short*1.5);notes.push({bad:1,t:C.n+': เงินฝากไม่พอ ต้องกู้ด่วนส่วนที่ขาด '+fmt(short)+' บาท เสียจริง '+fmt(short*1.5)+' บาท'})}
+   else notes.push({t:C.n+': จ่าย '+fmt(C.cost)+' บาทจากเงินฝากได้ทันที'})}}
+ const fhp=FATES[S.fate||0].hp||0,chp=C.hp||0;
  if(R.special==='scam'){if(S.scam>0)notes.push({bad:1,t:'เงิน '+fmt(S.scam)+' บาทที่ใส่ไว้ในแชร์ลูกโซ่ หายหมด'});else notes.push({good:1,t:'ปฏิเสธเพื่อนได้ ไม่เสียเงินให้แชร์ลูกโซ่'})}
- S.W=H;S.hp+=HAPPY[S.happy].pt;
- S.log.push({r:S.r,before,after:sum(H),alloc:{...S.alloc},ins:S.ins,happy:S.happy,debt:S.debt,scam:R.special==='scam'?S.scam:0,notes});
+ S.W=H;S.hp+=HAPPY[S.happy].pt+fhp+chp;
+ S.log.push({r:S.r,before,after:sum(H),alloc:{...S.alloc},ins:S.ins,happy:S.happy,debt:S.debt,scam:R.special==='scam'?S.scam:0,notes,card:ci,hpGain:HAPPY[S.happy].pt+fhp+chp});
  S.phase='result';save();render();scrollTo(0,0)}
 
 function result(head,strip,R){
@@ -199,7 +220,8 @@ function result(head,strip,R){
  <div class="evt"><b>ตลาด:</b> ${R.market}</div>
  <div class="mk">${ASSETS.map(x=>{const p=Math.round((R.mult[x.k]-1)*100);return `<div>${x.n}<b class="${p>=0?'up':'down'}">${p>=0?'+':''}${p}%</b></div>`}).join('')}</div>
  ${R.event?`<div class="evt bad"><h3>การ์ดเหตุการณ์: ${R.event.name}</h3><span>${R.event.text}</span></div>`:''}
- <h3>เกิดอะไรกับเงินคุณ</h3><ul class="notes">${L.notes.map(n=>`<li class="${n.bad?'warn':n.good?'up':''}">${n.t}</li>`).join('')||'<li>รอบนี้ไม่มีเหตุการณ์พิเศษ</li>'}<li>ใช้เงินเพื่อความสุข: ${HAPPY[L.happy].n} (+${HAPPY[L.happy].pt} แต้มสุข)</li></ul>
+ ${L.card!=null?`<div class="evt ${CARDS[L.card].cost?'bad':(CARDS[L.card].gain||CARDS[L.card].hp)?'good':''}"><span class="muted">การ์ดชีวิตส่วนตัวของคุณ (สุ่ม)</span><h3>${CARDS[L.card].n}</h3><span>${CARDS[L.card].t}</span></div>`:''}
+ <h3>เกิดอะไรกับเงินคุณ</h3><ul class="notes">${L.notes.map(n=>`<li class="${n.bad?'warn':n.good?'up':''}">${n.t}</li>`).join('')||'<li>รอบนี้ไม่มีเหตุการณ์พิเศษ</li>'}<li>แต้มสุขรอบนี้ +${L.hpGain!=null?L.hpGain:HAPPY[L.happy].pt} (ใช้เงินแบบ${HAPPY[L.happy].n})</li></ul>
  <div class="spread"><span class="muted">เงินทั้งหมดตอนนี้</span><span class="big">${fmt(L.after)} ฿</span></div>
  <button class="main" id="nx">${S.r<3?'ไปรอบถัดไป':'ดูผลตอนเกษียณ'}</button></div>`;
  $('nx').onclick=()=>{if(S.r<3){S.r++;S.phase='decide';S.scam=0}else S.phase='final';save();render();scrollTo(0,0)}}
@@ -207,7 +229,7 @@ function result(head,strip,R){
 function lessons(){
  const out=[],L=S.log,g=i=>L[i]||{};
  if(g(0).debt==='min')out.push('จ่ายหนี้บัตรขั้นต่ำ ทำให้เสียดอกเบี้ยไป 150,000 บาท ทั้งที่โปะได้ตั้งแต่ต้น');
- if((g(0).notes||[]).some(n=>/กู้ด่วน/.test(n.t)))out.push('ไม่มีเงินสำรองฉุกเฉินตอนรถเสีย ต้องกู้ด่วนดอกเบี้ยสูง');
+ const borrow=L.filter(l=>(l.notes||[]).some(n=>/กู้ด่วน/.test(n.t))).length;if(borrow)out.push('เงินฝากสำรองไม่พอตอนมีเรื่องด่วน ต้องกู้ดอกเบี้ยสูง '+borrow+' ครั้ง');
  if(g(1).ins===false)out.push('ไม่มีประกันสุขภาพตอนป่วยหนัก ค่ารักษา 600,000 บาทกินเงินเกษียณ');
  if(g(2).scam>0)out.push('เสียเงินให้แชร์ลูกโซ่ที่การันตีผลตอบแทนสูงเกินจริง');
  if(g(3).alloc&&g(3).alloc.stock>=50)out.push('ใกล้เกษียณยังถือหุ้น '+g(3).alloc.stock+'% เจอตลาดตกปีสุดท้ายพอดี');
@@ -215,13 +237,25 @@ function lessons(){
  if(!out.length)out.push('เล่นได้รอบคอบมาก ทั้งเรื่องหนี้ ประกัน เงินสำรอง และการลดความเสี่ยงก่อนเกษียณ');
  return out}
 
+function title(w){
+ const L=S.log,avgStock=L.reduce((s,l)=>s+l.alloc.stock,0)/Math.max(1,L.length),avgDep=L.reduce((s,l)=>s+l.alloc.dep,0)/Math.max(1,L.length);
+ if(L.some(l=>l.scam>0))return['เหยื่อแชร์ลูกโซ่ผู้ได้บทเรียน','ใจดีกับเพื่อนเกินไปหน่อย'];
+ if(w>=4500000&&S.hp>=5)return['เศรษฐีชีวิตดี','รวยด้วย มีความสุขด้วย หายากที่สุดในห้อง'];
+ if(S.hp>=7)return['สายใช้ชีวิตเต็มที่','เงินอาจไม่มากที่สุด แต่เก็บความทรงจำไว้เพียบ'];
+ if(S.hp<=1)return['เศรษฐีหน้างก','เก็บได้เยอะ แต่ลืมให้รางวัลตัวเองไปหน่อย'];
+ if(avgStock>=55)return['นักลงทุนใจเหล็ก','ถือหุ้นหนักทั้งชีวิต ใจถึงจริง'];
+ if(avgDep>=35)return['สายปลอดภัยไว้ก่อน','นอนหลับสบาย แต่เงินโตช้าหน่อย'];
+ return['คนธรรมดาที่วางแผนดี','สมดุลทั้งเงิน ความเสี่ยง และความสุข']}
 function final(head){
+ const TT=title(sum(S.W));
  const w=sum(S.W),max=Math.max(...S.log.map(l=>l.after),1);
  app.innerHTML=head+`<div class="card">${board(4,false)}<p class="muted" style="margin:0">${esc(S.name)} เกษียณที่อายุ 60 ด้วยเงิน</p><div class="big" style="color:var(--green)">${fmt(w)} ฿</div>
- <div class="spread"><span>แต้มความสุขระหว่างทาง</span><b style="font-size:24px">${S.hp} / 8</b></div>
+ <div class="evt good"><span class="muted">ฉายาของคุณ</span><h3 style="font-size:24px">${TT[0]}</h3><span>${TT[1]}</span></div>
+ <p class="muted" style="margin:0">ชะตาตอนเกิด: ${FATES[S.fate||0].n}</p>
+ <div class="spread"><span>แต้มความสุขระหว่างทาง</span><b style="font-size:24px">${S.hp}</b></div>
  <div class="bars">${S.log.map(l=>`<div class="b"><span>อายุ ${ROUNDS[l.r].to}</span><i style="width:${Math.max(2,l.after/max*100)}%"></i><span class="money">${fmt(l.after)}</span></div>`).join('')}</div>
  <h3>บทเรียนจากเกมของคุณ</h3><ul class="notes">${lessons().map(t=>`<li>${t}</li>`).join('')}</ul>
- <div class="evt good"><b>แจ้งผู้ดำเนินเกม:</b> ชื่อ ${esc(S.name)} · เงิน ${fmt(w)} บาท · ${S.hp} แต้มสุข</div>
+ <div class="evt good"><b>แจ้งผู้ดำเนินเกม:</b> ชื่อ ${esc(S.name)} · เงิน ${fmt(w)} บาท · ${S.hp} แต้มสุข · ฉายา ${TT[0]}</div>
  ${formLink(w)?`<a class="btnlink" href="${esc(formLink(w))}" target="_blank" rel="noopener">ส่งคะแนนขึ้น Ranking</a><p class="muted" style="margin:0">เปิด Google Form ที่กรอกชื่อและคะแนนให้แล้ว กด "ส่ง" ได้เลย ส่งครั้งเดียวพอ</p>`:''}
  <button id="again">เล่นใหม่</button><p class="muted" style="margin:0">เกมนี้ใช้ตัวเลขสมมติ ไม่ใช่ผลตอบแทนจริงหรือคำแนะนำการลงทุน</p></div>`;
  $('again').onclick=()=>ask('ล้างผลแล้วเริ่มเล่นใหม่?',()=>{const n=S.name;S=fresh();S.name=n;save();render()})}
